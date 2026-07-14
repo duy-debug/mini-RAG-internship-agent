@@ -1,0 +1,8 @@
+.env
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+evaluation_report.md
+data/index/
+*.log

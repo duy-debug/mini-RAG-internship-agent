@@ -1,0 +1,12 @@
+{"id": "q1", "question": "Báo cáo tuần phải gửi khi nào và gồm những gì?", "expected_doc": "internship_policy.md", "expected_keywords": ["17:00", "thứ Sáu", "đã hoàn thành", "kế hoạch"], "verify_level": "light"}
+{"id": "q2", "question": "Các loại commit nào được phép sử dụng?", "expected_doc": "coding_rules.md", "expected_keywords": ["feat", "fix", "docs", "refactor"], "verify_level": "light"}
+{"id": "q3", "question": "Có được commit API key lên Git không?", "expected_doc": "security_policy.md", "expected_keywords": ["không", "API key", "Git"], "verify_level": "heavy"}
+{"id": "q4", "question": "Khi nghi ngờ secret đã lộ thì cần làm gì?", "expected_doc": "security_policy.md", "expected_keywords": ["dừng", "báo", "rotate", "revoke"], "verify_level": "heavy"}
+{"id": "q5", "question": "Quy trình code review gồm những nội dung gì?", "expected_doc": "coding_rules.md", "expected_keywords": ["logic", "bảo mật", "hiệu năng"], "verify_level": "heavy"}
+{"id": "q6", "question": "Sinh viên xin nghỉ ốm cần làm gì?", "expected_doc": "internship_policy.md", "expected_keywords": ["giấy xác nhận", "cơ sở y tế", "ba ngày"], "verify_level": "light"}
+{"id": "q7", "question": "Các mức phân loại sự cố bảo mật gồm những gì?", "expected_doc": "security_policy.md", "expected_keywords": ["thấp", "trung bình", "cao"], "verify_level": "light"}
+{"id": "q8", "question": "Pipeline CI phải chạy những bước nào?", "expected_doc": "coding_rules.md", "expected_keywords": ["lint", "typecheck", "unit test", "build"], "verify_level": "light"}
+{"id": "q9", "question": "Sinh viên có điểm đánh giá bao nhiêu thì được xem xét khen thưởng?", "expected_doc": "internship_policy.md", "expected_keywords": ["4.5", "khen thưởng", "làm việc chính thức"], "verify_level": "heavy"}
+{"id": "q10", "question": "Dữ liệu cá nhân được phân loại thành mấy mức?", "expected_doc": "security_policy.md", "expected_keywords": ["bốn mức", "công khai", "nhạy cảm", "hạn chế"], "verify_level": "light"}
+{"id": "q11", "question": "Khi kết thúc thực tập sinh viên cần làm những gì?", "expected_doc": "internship_policy.md", "expected_keywords": ["bàn giao", "báo cáo tổng kết", "trả lại thiết bị"], "verify_level": "light"}
+{"id": "q12", "question": "Độ phủ unit test tối thiểu cho hàm public là bao nhiêu?", "expected_doc": "coding_rules.md", "expected_keywords": ["80%", "100%", "hàm public", "logic nghiệp vụ"], "verify_level": "heavy"}
