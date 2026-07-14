@@ -26,38 +26,21 @@ Tìm thủ công tốn thời gian và dễ nhớ sai. Workflow này xây một 
 
 ## 3. Luồng hoạt động (Flow)
 
-Dùng công cụ https://mermaid.live/ và paste nội dung bên dưới để xem sơ đồ:
-
 ```mermaid
 flowchart TD
-    A[Câu hỏi người dùng] --> B[Security Gate]
-    B --> C{Có secret?}
-    C -->|Có| D[Từ chối]
-    C -->|Không| E[Che PII]
-    E --> F{Có risk keywords?}
-    F -->|Có| G[Verify heavy]
-    F -->|Không| H[Verify light]
-    G --> I[Retrieval]
-    H --> I
-    I --> J[Load + Chunk + TF-IDF]
-    J --> K[Top-k chunk]
-    K --> L{Có API key?}
-    L -->|Không| M[Offline]
-    L -->|Có| N[Online Groq]
-    M --> O[Verify]
-    N --> O
-    O --> P{Đạt?}
-    P -->|Có| Q[Trả kết quả]
-    P -->|Không| R{Heavy + online?}
-    R -->|Có| S[Repair + Verify lại]
-    S --> T{Pass?}
-    T -->|Có| Q
-    T -->|Không| U[Giữ draft + review]
-    R -->|Không| Q
-    U --> V{Cần review?}
-    Q --> V
-    V -->|Không| W[In kết quả]
-    V -->|Có| X[In kết quả + cảnh báo]
+    Start["1. Người dùng nhập câu hỏi"] --> Security{"2. Kiểm tra bảo mật\nCó API key, secret,\nprompt injection không?"}
+    Security -->|Có| Reject["Từ chối ngay\nKhông gọi AI"]
+    Security -->|Không| Retrieve["3. Truy xuất tài liệu\nTìm top-k chunk phù hợp nhất\nbằng TF-IDF + cosine similarity"]
+    Retrieve --> Ask{"4. Có API key thật\nvà không dùng chế độ\noffline không?"}
+    Ask -->|Không| Offline["Trả lời offline\nTự động trích câu\ntrùng khớp từ chunk"]
+    Ask -->|Có| Online["Trả lời online\nGửi prompt + chunk\ncho Groq AI"]
+    Offline --> Verify["5. Xác minh câu trả lời\nKiểm tra citation, groundedness,\nđộ rỗng, tính hợp lệ"]
+    Online --> Verify
+    Verify -->|Đạt yêu cầu| Output["6. Trả kết quả cho người dùng"]
+    Verify -->|Không đạt| Heavy{"7. Có phải verify\nnặng và đang dùng\nAI online không?"}
+    Heavy -->|Không| Output
+    Heavy -->|Có| Repair["8. Gửi lại cho AI sửa lỗi\n_không sửa được thì giữ\ndraft cũ + yêu cầu người review_"]
+    Repair --> Output
 ```
 
 ### Các bước chính
@@ -185,6 +168,20 @@ Khi chưa có Groq API key, agent dùng chế độ extractive fallback để ki
 ```bash
 python -m src.cli ask "Quy tắc đặt tên branch là gì?" --offline
 ```
+
+### Hỏi đáp tương tác nhiều câu
+
+```bash
+python -m src.cli chat
+```
+
+Gõ câu hỏi, enter → nhận trả lời → gõ tiếp. Gõ `exit` hoặc `Ctrl+C` để thoát:
+
+```bash
+python -m src.cli chat --offline
+```
+
+Hỗ trợ các flag `--docs`, `--skill`, `--top-k`, `--verify`, `--offline` giống `ask`.
 
 ### Ép mức verify
 
