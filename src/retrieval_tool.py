@@ -12,15 +12,15 @@ from typing import Iterable
 from .security import contains_prompt_injection, sanitize_document_text
 
 
-TOKEN_RE = re.compile(r"[A-Za-zÀ-ỹ0-9_./:-]+", re.UNICODE)
+TOKEN_RE = re.compile(r"[A-Za-zÀ-ỹ0-9_./:-]+", re.UNICODE)  # Regex tách token tiếng Việt có dấu
 
 
 @dataclass(frozen=True)
 class Chunk:
-    chunk_id: str
-    filename: str
-    text: str
-    score: float = 0.0
+    chunk_id: str  # ID dạng filename#cN
+    filename: str  # Tên file gốc
+    text: str  # Nội dung văn bản
+    score: float = 0.0  # Điểm TF-IDF cosine với câu hỏi
 
 
 def tokenize(text: str) -> list[str]:

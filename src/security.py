@@ -14,11 +14,11 @@ class SecurityError(ValueError):
 
 @dataclass(frozen=True)
 class SecurityFinding:
-    category: str
-    label: str
+    category: str  # "secret", "pii", "injection"
+    label: str  # Nhãn cụ thể, vd "openai_like_key"
 
 
-SECRET_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
+SECRET_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (  # Mẫu phát hiện secret/key trong input
     ("openai_like_key", re.compile(r"\bsk-[A-Za-z0-9_-]{16,}\b")),
     ("groq_api_key", re.compile(r"\bgsk_[A-Za-z0-9_-]{16,}\b")),
     ("jwt", re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b")),
@@ -31,7 +31,7 @@ SECRET_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ),
 )
 
-PII_PATTERNS: tuple[tuple[str, re.Pattern[str], str], ...] = (
+PII_PATTERNS: tuple[tuple[str, re.Pattern[str], str], ...] = (  # Mẫu phát hiện PII kèm replacement
     (
         "email",
         re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"),
@@ -44,7 +44,7 @@ PII_PATTERNS: tuple[tuple[str, re.Pattern[str], str], ...] = (
     ),
 )
 
-INJECTION_PATTERNS: tuple[re.Pattern[str], ...] = (
+INJECTION_PATTERNS: tuple[re.Pattern[str], ...] = (  # Mẫu phát hiện prompt injection
     re.compile(r"(?i)\bignore (?:all |the )?(?:previous|prior) instructions\b"),
     re.compile(r"(?i)\breveal (?:the )?(?:system prompt|developer message|hidden prompt)\b"),
     re.compile(r"(?i)\bbỏ qua (?:mọi |tất cả )?(?:hướng dẫn|chỉ dẫn)"),
@@ -68,7 +68,7 @@ def inspect_user_input(text: str) -> tuple[str, list[SecurityFinding]]:
     if not isinstance(text, str) or not text.strip():
         raise SecurityError("Câu hỏi rỗng hoặc không hợp lệ.")
 
-    secret_labels = _find_labels(text, SECRET_PATTERNS)
+    secret_labels = _find_labels(text, SECRET_PATTERNS)  # Duyệt tất cả mẫu secret để tìm match
     if secret_labels:
         raise SecurityError(
             "Phát hiện dữ liệu có thể là secret. Hãy xóa hoặc thay bằng placeholder trước khi tiếp tục: "
@@ -80,8 +80,8 @@ def inspect_user_input(text: str) -> tuple[str, list[SecurityFinding]]:
             "Câu hỏi chứa chỉ dẫn có dấu hiệu prompt injection nên không được gửi tới mô hình."
         )
 
-    sanitized = text
-    findings: list[SecurityFinding] = []
+    sanitized = text  # Bản sao sẽ được che PII
+    findings: list[SecurityFinding] = []  # Tích lũy cảnh báo bảo mật
     for label, pattern, replacement in PII_PATTERNS:
         if pattern.search(sanitized):
             findings.append(SecurityFinding(category="pii", label=label))
@@ -92,8 +92,8 @@ def inspect_user_input(text: str) -> tuple[str, list[SecurityFinding]]:
 
 def sanitize_document_text(text: str) -> tuple[str, list[SecurityFinding]]:
     # Che secret và PII trong tài liệu trước khi đưa vào context của model
-    sanitized = text
-    findings: list[SecurityFinding] = []
+    sanitized = text  # Bản sao sẽ được che secret và PII
+    findings: list[SecurityFinding] = []  # Tích lũy cảnh báo bảo mật
 
     for label, pattern in SECRET_PATTERNS:  # Duyệt từng mẫu secret để che
         if pattern.search(sanitized):

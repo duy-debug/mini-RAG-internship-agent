@@ -10,8 +10,8 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 
-DEFAULT_GROQ_BASE_URL = "https://api.groq.com/openai/v1"
-DEFAULT_GROQ_MODEL = "openai/gpt-oss-20b"
+DEFAULT_GROQ_BASE_URL = "https://api.groq.com/openai/v1"  # Base URL mặc định của Groq API
+DEFAULT_GROQ_MODEL = "openai/gpt-oss-20b"  # Model mặc định nếu không set GROQ_MODEL
 
 
 class LLMError(RuntimeError):
@@ -45,7 +45,7 @@ def is_configured() -> bool:
 def _extract_output_text(payload: dict[str, Any]) -> str:
     # Chỉ lấy câu trả lời cuối từ phản hồi Groq Responses API, bỏ qua reasoning
 
-    parts: list[str] = []
+    parts: list[str] = []  # Tích lũy các output_text từ response
 
     for item in payload.get("output", []):
         # Bỏ qua item có type là reasoning
@@ -80,14 +80,14 @@ def generate(
 ) -> str:
     load_dotenv()
 
-    api_key = os.getenv("GROQ_API_KEY")
+    api_key = os.getenv("GROQ_API_KEY")  # API key cho Groq
     if not api_key:
         raise LLMError("Thiếu biến môi trường GROQ_API_KEY.")
 
-    selected_model = model or os.getenv("GROQ_MODEL", DEFAULT_GROQ_MODEL)
-    base_url = os.getenv("GROQ_BASE_URL", DEFAULT_GROQ_BASE_URL).rstrip("/")
+    selected_model = model or os.getenv("GROQ_MODEL", DEFAULT_GROQ_MODEL)  # Model sẽ dùng
+    base_url = os.getenv("GROQ_BASE_URL", DEFAULT_GROQ_BASE_URL).rstrip("/")  # Base URL có thể tuỳ chỉnh
 
-    body = json.dumps(
+    body = json.dumps(  # Payload JSON gửi lên Groq Responses API
         {
             "model": selected_model,
             "instructions": instructions,
@@ -95,7 +95,7 @@ def generate(
         }
     ).encode("utf-8")
 
-    request = Request(
+    request = Request(  # HTTP request tới Groq API
         f"{base_url}/responses",
         data=body,
         method="POST",
@@ -117,7 +117,7 @@ def generate(
     except json.JSONDecodeError as exc:
         raise LLMError("Groq API trả dữ liệu JSON không hợp lệ.") from exc
 
-    text = _extract_output_text(payload)
+    text = _extract_output_text(payload)  # Trích xuất nội dung text từ response JSON
     if not text:
         raise LLMError("Không đọc được nội dung trả lời từ Groq Responses API.")
     return text

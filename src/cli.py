@@ -15,9 +15,9 @@ from .security import SecurityError
 def build_parser() -> argparse.ArgumentParser:
     # Xây dựng CLI parser với subcommand ask
     parser = argparse.ArgumentParser(description="Mini-RAG Internship Assistant")
-    subparsers = parser.add_subparsers(dest="command", required=True)
+    subparsers = parser.add_subparsers(dest="command", required=True)  # Subcommand: ask, chat
 
-    ask = subparsers.add_parser("ask", help="Đặt câu hỏi cho agent")
+    ask = subparsers.add_parser("ask", help="Đặt câu hỏi cho agent")  # Subcommand ask: hỏi một câu
     ask.add_argument("question", help="Câu hỏi cần tra cứu")
     ask.add_argument("--docs", default="data/docs", help="Thư mục tài liệu")
     ask.add_argument(
@@ -34,7 +34,7 @@ def build_parser() -> argparse.ArgumentParser:
     ask.add_argument("--offline", action="store_true")
     ask.add_argument("--json", action="store_true", dest="as_json")
 
-    chat = subparsers.add_parser("chat", help="Hỏi đáp tương tác nhiều câu")
+    chat = subparsers.add_parser("chat", help="Hỏi đáp tương tác nhiều câu")  # Subcommand chat: hội thoại nhiều lượt
     chat.add_argument("--docs", default="data/docs", help="Thư mục tài liệu")
     chat.add_argument(
         "--skill",
@@ -73,9 +73,9 @@ def _build_agent(args) -> RAGAgent:
 
 
 def _cmd_ask(args) -> int:
-    agent = _build_agent(args)
+    agent = _build_agent(args)  # Khởi tạo RAGAgent với docs/skill/top_k từ CLI
     try:
-        result = agent.answer(
+        result = agent.answer(  # Chạy pipeline: security → retrieve → answer → verify
             args.question,
             verify_level=args.verify,
             offline=args.offline,
@@ -93,12 +93,12 @@ def _cmd_ask(args) -> int:
 
 
 def _cmd_chat(args) -> int:
-    agent = _build_agent(args)
+    agent = _build_agent(args)  # Khởi tạo RAGAgent cho chat
     print("Mini-RAG Chat (gõ 'exit' hoặc Ctrl+C để thoát)")
     print("-" * 40)
     while True:
         try:
-            question = input(">>> ").strip()
+            question = input(">>> ").strip()  # Đọc input từ người dùng
         except (EOFError, KeyboardInterrupt):
             print()
             break
@@ -107,7 +107,7 @@ def _cmd_chat(args) -> int:
         if question.lower() in ("exit", "quit", "thoát"):
             break
         try:
-            result = agent.answer(
+            result = agent.answer(  # Chạy pipeline cho từng câu hỏi trong chat
                 question,
                 verify_level=args.verify,
                 offline=args.offline,

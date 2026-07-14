@@ -26,9 +26,9 @@ def evaluate(
     offline: bool,
 ) -> tuple[list[dict], dict]:
     # Chạy agent trên toàn bộ dataset và trả về rows + summary
-    rows: list[dict] = []
+    rows: list[dict] = []  # Tích lũy kết quả từng case
     with dataset_path.open("r", encoding="utf-8") as handle:
-        cases = [json.loads(line) for line in handle if line.strip()]
+        cases = [json.loads(line) for line in handle if line.strip()]  # Đọc dataset từ JSONL
 
     for case in cases:  # Duyệt từng câu hỏi trong dataset để đánh giá
         result = agent.answer(
@@ -36,10 +36,10 @@ def evaluate(
             verify_level=case.get("verify_level", "auto"),
             offline=offline,
         )
-        retrieved_docs = {source["filename"] for source in result.sources}
-        coverage = keyword_coverage(result.answer, case.get("expected_keywords", []))
-        retrieval_hit = case["expected_doc"] in retrieved_docs
-        citation_validity = (
+        retrieved_docs = {source["filename"] for source in result.sources}  # Tên file đã retrieve
+        coverage = keyword_coverage(result.answer, case.get("expected_keywords", []))  # Keyword overlap
+        retrieval_hit = case["expected_doc"] in retrieved_docs  # File đúng có trong top-k không
+        citation_validity = (  # Tất cả citation hợp lệ và có ít nhất một citation
             len(result.verification["invalid_citations"]) == 0
             and bool(result.verification["valid_citations"])
         )
@@ -57,7 +57,7 @@ def evaluate(
             }
         )
 
-    summary = {
+    summary = {  # Tổng hợp số liệu đánh giá toàn bộ dataset
         "cases": len(rows),
         "retrieval_hit_at_k": round(mean(row["retrieval_hit"] for row in rows), 3),
         "mean_keyword_coverage": round(mean(row["keyword_coverage"] for row in rows), 3),

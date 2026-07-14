@@ -13,7 +13,7 @@ from .security import SecurityFinding, inspect_user_input
 from .verify_tool import VerificationResult, verify_answer
 
 
-RISK_KEYWORDS = {
+RISK_KEYWORDS = {  # Từ khoá rủi ro → verify nặng (heavy) khi xuất hiện trong câu hỏi
     "api key", "access token", "password", "secret", "private key",
     "bảo mật", "phân quyền", "authorization", "authentication",
     "production", "migration", "thanh toán", "payment", "rotate", "revoke",
@@ -23,15 +23,15 @@ RISK_KEYWORDS = {
 
 @dataclass(frozen=True)
 class AgentResult:
-    question: str
-    sanitized_question: str
-    answer: str
-    mode: str
-    verify_level: str
-    sources: list[dict]
-    verification: dict
-    security_findings: list[dict]
-    human_review_required: bool
+    question: str  # Câu hỏi gốc từ người dùng
+    sanitized_question: str  # Câu hỏi đã được che PII
+    answer: str  # Câu trả lời cuối cùng
+    mode: str  # "offline-extractive", "groq-responses", "groq-responses-repaired"
+    verify_level: str  # "light" hoặc "heavy"
+    sources: list[dict]  # Các chunk được retrieve (chunk_id, filename, score)
+    verification: dict  # Kết quả verification (passed, level, checks...)
+    security_findings: list[dict]  # Cảnh báo bảo mật từ security gate
+    human_review_required: bool  # True nếu cần người review lại
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -185,7 +185,7 @@ class RAGAgent:
         # Pipeline: security -> retrieve -> answer -> verify -> repair
         sanitized_question, findings = inspect_user_input(question)
 
-        selected_level = (
+        selected_level = (  # Xác định verify_level: auto → dựa trên risk keywords
             classify_verify_level(sanitized_question)
             if verify_level == "auto"
             else verify_level
@@ -193,10 +193,10 @@ class RAGAgent:
         if selected_level not in {"light", "heavy"}:
             raise ValueError("verify_level phải là auto, light hoặc heavy.")
 
-        sources = retrieve(sanitized_question, self.docs_dir, top_k=self.top_k)
-        skill = _load_skill(self.skill_path)
+        sources = retrieve(sanitized_question, self.docs_dir, top_k=self.top_k)  # Truy xuất chunk liên quan
+        skill = _load_skill(self.skill_path)  # Đọc skill hướng dẫn trả lời
 
-        mode = "offline-extractive"
+        mode = "offline-extractive"  # Mặc định offline; sẽ đổi thành groq nếu có API key
         if offline or not is_configured():
             answer = _offline_answer(sanitized_question, sources)
         else:
@@ -226,7 +226,7 @@ class RAGAgent:
                 # Giữ draft cũ và yêu cầu human review.
                 pass
 
-        human_review_required = selected_level == "heavy" or not verification.passed
+        human_review_required = selected_level == "heavy" or not verification.passed  # Yêu cầu review nếu verify nặng hoặc thất bại
 
         return AgentResult(
             question=question,
